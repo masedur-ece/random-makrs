@@ -9,9 +9,11 @@ app = Flask(__name__)
 
 
 def myRandom(start, stop, step):
-    steps = int((stop - start) / step)
-    val = start + step * random.randint(0, steps)
-    return val
+    # Integer-based calculation avoids floating-point bias/errors
+    start_i = round(start / step)
+    stop_i = round(stop / step)
+
+    return random.randint(start_i, stop_i) * step
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -19,22 +21,55 @@ def home():
 
     data = []
 
+    # Default values
+    students = ""
+    starting_marks = 22.0
+    maximum_marks = 24.5
+    total_marks = 25.0
+
     if request.method == "POST":
 
-        roll = int(request.form["roll"])
+        students = int(request.form["students"])
+        starting_marks = float(request.form["starting_marks"])
+        maximum_marks = float(request.form["maximum_marks"])
+        total_marks = float(request.form["total_marks"])
 
-        marks1 = 22
-        marks2 = 24.5
+        # Validation
+        if starting_marks > maximum_marks:
+            return render_template(
+                "index.html",
+                error="Starting marks cannot be greater than maximum marks.",
+                students=students,
+                starting_marks=starting_marks,
+                maximum_marks=maximum_marks,
+                total_marks=total_marks
+            )
 
-        for i in range(1, roll + 1):
-            x = myRandom(marks1, marks2, 0.5)
+        if maximum_marks > total_marks:
+            return render_template(
+                "index.html",
+                error="Maximum marks cannot be greater than total marks.",
+                students=students,
+                starting_marks=starting_marks,
+                maximum_marks=maximum_marks,
+                total_marks=total_marks
+            )
+
+        # Generate marks
+        for i in range(1, students + 1):
+
+            x = myRandom(
+                starting_marks,
+                maximum_marks,
+                0.5
+            )
 
             data.append({
                 "Roll": i,
-                "Marks": x
+                "Marks": round(x, 1)
             })
 
-        # Create marks.xlsx
+        # Create Excel
         df = pd.DataFrame(data)
         df.to_excel("marks.xlsx", index=False)
 
@@ -53,18 +88,30 @@ def home():
 
         for row in ws.iter_rows():
             for cell in row:
+
                 cell.alignment = Alignment(
                     horizontal="center",
                     vertical="center"
                 )
+
                 cell.border = border
+
+        # Column width
+        ws.column_dimensions["A"].width = 12
+        ws.column_dimensions["B"].width = 12
 
         wb.save("marks.xlsx")
 
-    return render_template("index.html", data=data)
+    return render_template(
+        "index.html",
+        data=data,
+        students=students,
+        starting_marks=starting_marks,
+        maximum_marks=maximum_marks,
+        total_marks=total_marks
+    )
 
 
-# DOWNLOAD ROUTE
 @app.route("/download")
 def download():
 
