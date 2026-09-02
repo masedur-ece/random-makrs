@@ -2,62 +2,347 @@
 <html>
 
 <head>
-    <title>Marks Generator</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Random Marks Generator</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #ffffff;
+            color: #040404;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin-bottom: 8px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #770000;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(255, 255, 255, 0);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            margin-bottom: 8px;
+        }
+
+        .field input {
+            padding: 12px;
+            border: 1px solid #000000;
+            border-radius: 0px;
+            font-size: 16px;
+        }
+
+        .field input:focus {
+            outline: none;
+            border-color: #000000;
+        }
+
+        .generate-btn {
+            width: 100%;
+            margin-top: 25px;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #000000;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 12px;
+            background: #b2afaf;
+            color: #960909;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .result {
+            margin-top: 30px;
+        }
+
+        .result h2 {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .info {
+            text-align: center;
+            color: #000000;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #000000;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #000000;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #ffffff;
+        }
+
+        .download-btn {
+            display: block;
+            width: 220px;
+            margin: 25px auto 0;
+            padding: 12px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            background: #ff0000;
+            color: white;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #b6b9be;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+
+            .container {
+                margin: 20px auto;
+                padding: 12px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
-    <h1>Student Marks Generator</h1>
+<div class="container">
 
-    <form method="POST">
+    <div class="header">
 
-        <label>Number of Students:</label>
+        <h1>Random Marks Generator</h1>
 
-        <input
-            type="number"
-            name="roll"
-            min="1"
-            required
-        >
+        <p>Generate unbiased random marks for students</p>
 
-        <button type="submit">
-            Generate
-        </button>
-
-    </form>
+    </div>
 
 
-    {% if data %}
+    <div class="card">
 
-    <h2>Generated Marks</h2>
+        <form method="POST">
 
-    <table border="1">
+            <div class="form-grid">
 
-        <tr>
-            <th>Roll</th>
-            <th>Marks</th>
-        </tr>
+                <div class="field">
 
-        {% for student in data %}
+                    <label>Number of Students</label>
 
-        <tr>
-            <td>{{ student.Roll }}</td>
-            <td>{{ student.Marks }}</td>
-        </tr>
+                    <input
+                        type="number"
+                        name="students"
+                        min="1"
+                        value="{{ students }}"
+                        required
+                    >
 
-        {% endfor %}
+                </div>
 
-    </table>
 
-    <br>
+                <div class="field">
 
-    <form action="{{ url_for('download') }}" method="GET">
-        <button type="submit">
-            Download Excel
-        </button>
-    </form>
+                    <label>Starting Marks</label>
 
-    {% endif %}
+                    <input
+                        type="number"
+                        name="starting_marks"
+                        value="{{ starting_marks }}"
+                        step="0.5"
+                        min="0"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>Maximum Marks</label>
+
+                    <input
+                        type="number"
+                        name="maximum_marks"
+                        value="{{ maximum_marks }}"
+                        step="0.5"
+                        min="0"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>Total Marks</label>
+
+                    <input
+                        type="number"
+                        name="total_marks"
+                        value="{{ total_marks }}"
+                        step="1"
+                        min="0"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button class="generate-btn" type="submit">
+                Generate Marks
+            </button>
+
+        </form>
+
+
+        {% if error %}
+
+        <div class="error">
+            {{ error }}
+        </div>
+
+        {% endif %}
+
+
+        {% if data %}
+
+        <div class="result">
+
+            <h2>Generated Marks</h2>
+
+            <div class="info">
+                {{ students }} Students
+                &nbsp; • &nbsp;
+                Range: {{ starting_marks }} – {{ maximum_marks }}
+                &nbsp; • &nbsp;
+                Total: {{ total_marks }}
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <tr>
+                        <th>Roll</th>
+                        <th>Marks</th>
+                    </tr>
+
+
+                    {% for student in data %}
+
+                    <tr>
+
+                        <td>{{ student.Roll }}</td>
+
+                        <td>{{ "%.1f"|format(student.Marks) }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </table>
+
+            </div>
+
+
+            <a
+                class="download-btn"
+                href="{{ url_for('download') }}"
+            >
+                Download Excel
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="footer">
+        Random Marks Generator • CA Marks
+    </div>
+
+</div>
 
 </body>
 
