@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Marks Generator</title>
+</head>
+
+<body>
+
+    <h1>Student Marks Generator</h1>
+
+    <form method="POST">
+
+        <label>Number of Students:</label>
+
+        <input
+            type="number"
+            name="roll"
+            min="1"
+            required
+        >
+
+        <button type="submit">
+            Generate
+        </button>
+
+    </form>
+
+
+    {% if data %}
+
+    <h2>Generated Marks</h2>
+
+    <table border="1">
+
+        <tr>
+            <th>Roll</th>
+            <th>Marks</th>
+        </tr>
+
+        {% for student in data %}
+
+        <tr>
+            <td>{{ student.Roll }}</td>
+            <td>{{ student.Marks }}</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    <br>
+
+    <form action="{{ url_for('download') }}" method="GET">
+        <button type="submit">
+            Download Excel
+        </button>
+    </form>
+
+    {% endif %}
+
+</body>
+
+</html>
