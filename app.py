@@ -1,126 +1,407 @@
-import random
-import pandas as pd
+<!DOCTYPE html>
+<html>
 
-from flask import Flask, render_template, request, send_file
-from openpyxl import load_workbook
-from openpyxl.styles import Alignment, Border, Side
+<head>
 
-app = Flask(__name__)
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Random Marks Generator</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #ffffff;
+            color: #040404;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin-bottom: 8px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #470500;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(255, 255, 255, 0);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            margin-bottom: 8px;
+        }
+
+        .field input {
+            padding: 12px;
+            border: 1px solid #000000;
+            border-radius: 0px;
+            font-size: 16px;
+        }
+
+        .field input:focus {
+            outline: none;
+            border-color: #000000;
+        }
+
+        .generate-btn {
+            width: 100%;
+            margin-top: 25px;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #000000;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 12px;
+            background: #b2afaf;
+            color: #960909;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .result {
+            margin-top: 30px;
+        }
+
+        .result h2 {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .info {
+            text-align: center;
+            color: #000000;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #000000;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #000000;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #ffffff;
+        }
+
+        .download-btn {
+            display: block;
+            width: 220px;
+            margin: 25px auto 0;
+            padding: 12px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            background: #ff0000;
+            color: white;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #b6b9be;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+
+            .container {
+                margin: 20px auto;
+                padding: 12px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+        }
+
+    </style>
+
+</head>
 
 
-def myRandom(start, stop, step):
-    # Integer-based calculation avoids floating-point bias/errors
-    start_i = round(start / step)
-    stop_i = round(stop / step)
+<body>
 
-    return random.randint(start_i, stop_i) * step
+<div class="container">
 
+    <div class="header">
 
-@app.route("/", methods=["GET", "POST"])
-def home():
+        <h1>Random Marks Generator</h1>
 
-    data = []
+        <p>Generate unbiased random marks for students</p>
 
-    # Default values
-    students = ""
-    starting_marks = 22.0
-    maximum_marks = 24.5
-    total_marks = 25.0
-
-    if request.method == "POST":
-
-        students = int(request.form["students"])
-        starting_marks = float(request.form["starting_marks"])
-        maximum_marks = float(request.form["maximum_marks"])
-        total_marks = float(request.form["total_marks"])
-
-        # Validation
-        if starting_marks > maximum_marks:
-            return render_template(
-                "index.html",
-                error="Starting marks cannot be greater than maximum marks.",
-                students=students,
-                starting_marks=starting_marks,
-                maximum_marks=maximum_marks,
-                total_marks=total_marks
-            )
-
-        if maximum_marks > total_marks:
-            return render_template(
-                "index.html",
-                error="Maximum marks cannot be greater than total marks.",
-                students=students,
-                starting_marks=starting_marks,
-                maximum_marks=maximum_marks,
-                total_marks=total_marks
-            )
-
-        # Generate marks
-        for i in range(1, students + 1):
-
-            x = myRandom(
-                starting_marks,
-                maximum_marks,
-                0.5
-            )
-
-            data.append({
-                "Roll": i,
-                "Marks": round(x, 1)
-            })
-
-        # Create Excel
-        df = pd.DataFrame(data)
-        df.to_excel("marks.xlsx", index=False)
-
-        # Format Excel
-        wb = load_workbook("marks.xlsx")
-        ws = wb.active
-
-        thin = Side(style="thin")
-
-        border = Border(
-            left=thin,
-            right=thin,
-            top=thin,
-            bottom=thin
-        )
-
-        for row in ws.iter_rows():
-            for cell in row:
-
-                cell.alignment = Alignment(
-                    horizontal="center",
-                    vertical="center"
-                )
-
-                cell.border = border
-
-        # Column width
-        ws.column_dimensions["A"].width = 12
-        ws.column_dimensions["B"].width = 12
-
-        wb.save("marks.xlsx")
-
-    return render_template(
-        "index.html",
-        data=data,
-        students=students,
-        starting_marks=starting_marks,
-        maximum_marks=maximum_marks,
-        total_marks=total_marks
-    )
+    </div>
 
 
-@app.route("/download")
-def download():
+    <div class="card">
 
-    return send_file(
-        "marks.xlsx",
-        as_attachment=True,
-        download_name="marks.xlsx"
-    )
+        <form method="POST">
+
+            <div class="form-grid">
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+                <!-- Regular Roll End -->
+
+                <div class="field">
+
+                    <label>Regular Roll End</label>
+
+                    <input
+                        type="number"
+                        name="regular_end"
+                        min="1"
+                        value="{{ regular_end }}"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Lateral Roll Start -->
+
+                <div class="field">
+
+                    <label>Lateral Roll Start</label>
+
+                    <input
+                        type="number"
+                        name="lateral_start"
+                        min="0"
+                        value="{{ lateral_start }}"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Lateral Roll End -->
+
+                <div class="field">
+
+                    <label>Lateral Roll End</label>
+
+                    <input
+                        type="number"
+                        name="lateral_end"
+                        min="0"
+                        value="{{ lateral_end }}"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Starting Marks -->
+
+                <div class="field">
+
+                    <label>Starting Marks</label>
+
+                    <input
+                        type="number"
+                        name="starting_marks"
+                        value="{{ starting_marks }}"
+                        step="0.5"
+                        min="0"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Maximum Marks -->
+
+                <div class="field">
+
+                    <label>Maximum Marks</label>
+
+                    <input
+                        type="number"
+                        name="maximum_marks"
+                        value="{{ maximum_marks }}"
+                        step="0.5"
+                        min="0"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Total Marks -->
+
+                <div class="field">
+
+                    <label>Total Marks</label>
+
+                    <input
+                        type="number"
+                        name="total_marks"
+                        value="{{ total_marks }}"
+                        step="1"
+                        min="0"
+                        required
+                    >
+
+                </div>
+
+
+            </div>
+
+
+            <button class="generate-btn" type="submit">
+                Generate Marks
+            </button>
+
+        </form>
+
+
+        {% if error %}
+
+        <div class="error">
+            {{ error }}
+        </div>
+
+        {% endif %}
+
+
+        {% if data %}
+
+        <div class="result">
+
+            <h2>Generated Marks</h2>
+
+            <div class="info">
+
+                Regular: 1 – {{ regular_end }}
+
+                &nbsp; • &nbsp;
+
+                Lateral: {{ lateral_start }} – {{ lateral_end }}
+
+                &nbsp; • &nbsp;
+
+                Total Students: {{ data|length }}
+
+                <br>
+
+                Range: {{ starting_marks }} – {{ maximum_marks }}
+
+                &nbsp; • &nbsp;
+
+                Total Marks: {{ total_marks }}
+
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <tr>
+                        <th>Roll</th>
+                        <th>Marks</th>
+                    </tr>
+
+
+                    {% for student in data %}
+
+                    <tr>
+
+                        <td>{{ student.Roll }}</td>
+
+                        <td>{{ "%.1f"|format(student.Marks) }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </table>
+
+            </div>
+
+
+            <a
+                class="download-btn"
+                href="{{ url_for('download') }}"
+            >
+                Download Excel
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="footer">
+        Random Marks Generator • CA Marks
+    </div>
+
+</div>
+
+</body>
+
+</html>
